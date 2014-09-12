@@ -1,0 +1,20 @@
+{
+  "name": "rss-reader",
+  "version": "0.0.0",
+  "authors": [
+    "kristenmills <kristen@kristen-mills.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/rss-reader",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "core-ajax": "Polymer/core-ajax#~0.4.0",
+    "polymer": "Polymer/polymer#~0.4.0"
+  }
+}
