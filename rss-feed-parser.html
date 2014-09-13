@@ -11,17 +11,24 @@
     Polymer('rss-feed-parser', {
       auto: false,
       handleResponse: function(event) {
-        var rss = {}; //TODO: REAL STUFF
         var response = event.detail.response;
         if(!response.querySelector('rss')) {
           this.fire('invalid-feed', {response: response, xhr: event.detail.xhr});
         }else {
           var channel = response.querySelector('rss channel');
-          this.fire('feed-parsed', { rss: rss, response: response, xhr: event.detail.xhr} );
+          var feed = this.parseChannel(channel));
+          this.fire('feed-parsed', { feed: feed, response: response, xhr: event.detail.xhr} );
         }
       },
       go: function() {
         this.$.ajax.go();
+      },
+      parseChannel: function(channel) {
+        var feed = {};
+        feed.title = channel.querySelector('title').textContent;
+        feed.description = channel.querySelector('description').textContent;
+        feed.link = channel.querySelector('link').textContent;
+        return feed;
       }
     });
   </script>
