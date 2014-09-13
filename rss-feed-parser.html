@@ -12,7 +12,13 @@
       auto: false,
       handleResponse: function(event) {
         var rss = {}; //TODO: REAL STUFF
-        this.fire('feed-parsed', { rss: rss, response: event.detail.response, xhr: event.detail.xhr} );
+        var response = event.detail.response;
+        if(!response.querySelector('rss')) {
+          this.fire('invalid-feed', {response: response, xhr: event.detail.xhr});
+        }else {
+          var channel = response.querySelector('rss channel');
+          this.fire('feed-parsed', { rss: rss, response: response, xhr: event.detail.xhr} );
+        }
       },
       go: function() {
         this.$.ajax.go();
