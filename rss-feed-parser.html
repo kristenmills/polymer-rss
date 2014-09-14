@@ -4,7 +4,7 @@
 <polymer-element name="rss-feed-parser" constructor="RSSFeedParser" attributes="auto url headers params" hidden>
 
   <template>
-    <core-ajax id="ajax" url="{{url}}" auto?="{{auto}}" body="{{body}}" headers="{{headers}}" on-core-response="{{handleResponse}}" handleAs="xml">
+    <core-ajax id="ajax" url="{{url}}" auto?="{{auto}}" params="{{params}}" headers="{{headers}}" on-core-response="{{handleResponse}}" handleAs="xml">
   </template>
 
   <script>
@@ -39,33 +39,88 @@
         feed.docs = this.parseElement(channel, 'docs');
         feed.cloud = this.parseElement(channel, 'cloud', this.cloudCallback);
         feed.ttl = this.parseElement(channel, 'ttl');
-        // feed.image = this.parseElement(image, 'image');
-
+        feed.image = this.parseElement(channel, 'image', this.imageCallback);
+        feed.rating = this.parseElement(channel, 'rating');
+        feed.textInput = this.parseElement(channel, 'textInput', this.textInputCallback);
+        feed.skipDays = this.parseElement(channel, 'skipDays', this.daysCallback);
+        feed.skipHours = this.parseElement(channel, 'skipHours', this.hoursCallback);
+        feed.categories = [];
+        Array.prototype.forEach.call(channel.querySelectorAll('category'), function(item){
+          feed.categories.push(item.textContent);
+        });
         return feed;
       },
       parseElement: function(channel, string, cb) {
         if(!cb) {
-          cb = this.textCallback;
+          cb = this.textContentCallback;
         }
         var item = channel.querySelector(string);
+        return cb(item);
+      },
+      textContentCallback: function(item) {
         if(item){
-          return cb(item);
+          return item.textContent;
+        }else {
+          return "";
         }
       },
-      textCallback: function(item) {
-        return item.textContent;
-      },
       dateCallback: function(item) {
-        return new Date(item.textContent)
+        if(item){
+          return new Date(item.textContent);
+        }else {
+          return "";
+        }
       },
       cloudCallback: function(item) {
         var cloud = {};
-        cloud.domain = item.domain;
-        cloud.port = item.port;
-        cloud.path = item.path;
-        cloud.registerProcedure  = item.registerPrucedure;
-        cloud.protocol = item.protocol;
+        if(item) {
+          cloud.domain = item.domain;
+          cloud.port = item.port;
+          cloud.path = item.path;
+          cloud.registerProcedure  = item.registerPrucedure;
+          cloud.protocol = item.protocol;
+        }
         return cloud;
+      },
+      imageCallback: function(item) {
+        var image = {};
+        if(item) {
+          image.url = this.parseElement(item, 'url');
+          image.title = this.parseElement(item, 'title');
+          image.link = this.parseElement(item, 'link');
+          image.description = this.parseElement(item, 'description');
+          image.height = this.parseElement(item, 'height');
+          image.width = this.parseElement(item, 'width');
+        }
+        return image;
+      },
+      textInputCallback: function(item) {
+        var textInput = {};
+        if(item) {
+          textInput.title = this.parseElement(channel, 'title');
+          textInput.description = this.parseElement(channel, 'description');
+          textInput.name = this.parseElement(channel, 'name');
+          textInput.link = this.parseElement(channel, 'link');
+        }
+        return textInput;
+      },
+      daysCallback: function(item) {
+        var days = [];
+        if(item) {
+          Array.prototype.forEach.call(channel.querySelectorAll('day'), function(element){
+            days.push(element.textContent);
+          });
+        }
+        return days;
+      },
+      hoursCallback: function(item) {
+        var hours = [];
+        if(item) {
+          Array.prototype.forEach.call(channel.querySelectorAll('hour'), function(element){
+            hours.push(element.textContent);
+          });
+        }
+        return hours;
       }
     });
   </script>
