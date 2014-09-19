@@ -46,9 +46,32 @@
         feed.skipHours = this.parseElement(channel, 'skipHours', this.hoursCallback);
         feed.categories = [];
         Array.prototype.forEach.call(channel.querySelectorAll('category'), function(item){
-          feed.categories.push(item.textContent);
+          feed.categories.push({title: item.textContent, domain: item.domain });
         });
+        feed.items = this.parseItems(channel);
         return feed;
+      },
+      parseItems: function(channel) {
+        var items = [];
+        var self = this;
+        Array.prototype.forEach.call(channel.querySelectorAll('item'), function(item){
+          var itemObj = {};
+          itemObj.title = self.parseElement(item, 'title');
+          itemObj.description = self.parseElement(item, 'description');
+          itemObj.link = self.parseElement(item, 'link');
+          itemObj.author = self.parseElement(item, 'author');
+          itemObj.comments = self.parseElement(item, 'comments');
+          itemObj.guid = self.parseElement(item, 'guid');
+          itemObj.pubDate = self.parseElement(item, 'pubDate', self.dateCallback);
+          itemObj.source = self.parseElement(item, 'source', self.sourceCallback);
+          itemObj.enclosure = self.parseElement(item, 'enclosure', self.enclosureCallback);
+          itemObj.categories = [];
+          Array.prototype.forEach.call(item.querySelectorAll('category'), function(category){
+            itemObj.categories.push({title: category.textContent, domain: category.domain });
+          });
+          items.push(itemObj);
+        });
+        return items;
       },
       parseElement: function(channel, string, cb) {
         if(!cb) {
@@ -121,6 +144,23 @@
           });
         }
         return hours;
+      },
+      sourceCallback: function(item) {
+        var source = {};
+        if(item) {
+          source.title = item.textContent;
+          source.url = item.url
+        }
+        return source;
+      },
+      enclosureCallback: function(item) {
+        var enclosure = {};
+        if(item) {
+          enclosure.url = item.url;
+          enclosure.length = item.length;
+          enclosure.type =  item.type;
+        }
+        return enclosure;
       }
     });
   </script>
