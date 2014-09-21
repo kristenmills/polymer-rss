@@ -1,0 +1,167 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-ajax/core-ajax.html">
+
+<polymer-element name="rss-feed" constructor="RSSFeedParser" attributes="auto url headers params" hidden>
+
+  <template>
+    <core-ajax id="ajax" url="{{url}}" auto?="{{auto}}" params="{{params}}" headers="{{headers}}" on-core-response="{{handleResponse}}" handleAs="xml">
+  </template>
+
+  <script>
+    Polymer('rss-feed', {
+      auto: false,
+      handleResponse: function(event) {
+        var response = event.detail.response;
+        if(!response.querySelector('rss')) {
+          this.fire('invalid-feed', {response: response, xhr: event.detail.xhr});
+        }else {
+          var channel = response.querySelector('rss channel');
+          var feed = this.parseChannel(channel);
+          console.log(feed);
+          this.fire('feed-parsed', { feed: feed, response: response, xhr: event.detail.xhr} );
+        }
+      },
+      go: function() {
+        this.$.ajax.go();
+      },
+      parseChannel: function(channel) {
+        var feed = {};
+        feed.title = this.parseElement(channel, 'title');
+        feed.description = this.parseElement(channel, 'description');
+        feed.link = this.parseElement(channel, 'link');
+        feed.language = this.parseElement(channel, 'language');
+        feed.copyright = this.parseElement(channel, 'copyright');
+        feed.managingEditor = this.parseElement(channel, 'managingEditor');
+        feed.webMaster = this.parseElement(channel, 'webMaster');
+        feed.pubDate = this.parseElement(channel, 'pubDate', this.dateCallback);
+        feed.lastBuildDate = this.parseElement(channel, 'lastBuildDate', this.dateCallback);
+        feed.generator = this.parseElement(channel, 'generator');
+        feed.docs = this.parseElement(channel, 'docs');
+        feed.cloud = this.parseElement(channel, 'cloud', this.cloudCallback);
+        feed.ttl = this.parseElement(channel, 'ttl');
+        feed.image = this.parseElement(channel, 'image', this.imageCallback);
+        feed.rating = this.parseElement(channel, 'rating');
+        feed.textInput = this.parseElement(channel, 'textInput', this.textInputCallback);
+        feed.skipDays = this.parseElement(channel, 'skipDays', this.daysCallback);
+        feed.skipHours = this.parseElement(channel, 'skipHours', this.hoursCallback);
+        feed.categories = [];
+        Array.prototype.forEach.call(channel.querySelectorAll('category'), function(item){
+          feed.categories.push({title: item.textContent, domain: item.domain });
+        });
+        feed.items = this.parseItems(channel);
+        return feed;
+      },
+      parseItems: function(channel) {
+        var items = [];
+        var self = this;
+        Array.prototype.forEach.call(channel.querySelectorAll('item'), function(item){
+          var itemObj = {};
+          itemObj.title = self.parseElement(item, 'title');
+          itemObj.description = self.parseElement(item, 'description');
+          itemObj.link = self.parseElement(item, 'link');
+          itemObj.author = self.parseElement(item, 'author');
+          itemObj.comments = self.parseElement(item, 'comments');
+          itemObj.guid = self.parseElement(item, 'guid');
+          itemObj.pubDate = self.parseElement(item, 'pubDate', self.dateCallback);
+          itemObj.source = self.parseElement(item, 'source', self.sourceCallback);
+          itemObj.enclosure = self.parseElement(item, 'enclosure', self.enclosureCallback);
+          itemObj.categories = [];
+          Array.prototype.forEach.call(item.querySelectorAll('category'), function(category){
+            itemObj.categories.push({title: category.textContent, domain: category.domain });
+          });
+          items.push(itemObj);
+        });
+        return items;
+      },
+      parseElement: function(channel, string, cb) {
+        if(!cb) {
+          cb = this.textContentCallback;
+        }
+        var item = channel.querySelector(string);
+        return cb(item);
+      },
+      textContentCallback: function(item) {
+        if(item){
+          return item.textContent;
+        }else {
+          return "";
+        }
+      },
+      dateCallback: function(item) {
+        if(item){
+          return new Date(item.textContent);
+        }else {
+          return "";
+        }
+      },
+      cloudCallback: function(item) {
+        var cloud = {};
+        if(item) {
+          cloud.domain = item.domain;
+          cloud.port = item.port;
+          cloud.path = item.path;
+          cloud.registerProcedure  = item.registerPrucedure;
+          cloud.protocol = item.protocol;
+        }
+        return cloud;
+      },
+      imageCallback: function(item) {
+        var image = {};
+        if(item) {
+          image.url = this.parseElement(item, 'url');
+          image.title = this.parseElement(item, 'title');
+          image.link = this.parseElement(item, 'link');
+          image.description = this.parseElement(item, 'description');
+          image.height = this.parseElement(item, 'height');
+          image.width = this.parseElement(item, 'width');
+        }
+        return image;
+      },
+      textInputCallback: function(item) {
+        var textInput = {};
+        if(item) {
+          textInput.title = this.parseElement(channel, 'title');
+          textInput.description = this.parseElement(channel, 'description');
+          textInput.name = this.parseElement(channel, 'name');
+          textInput.link = this.parseElement(channel, 'link');
+        }
+        return textInput;
+      },
+      daysCallback: function(item) {
+        var days = [];
+        if(item) {
+          Array.prototype.forEach.call(channel.querySelectorAll('day'), function(element){
+            days.push(element.textContent);
+          });
+        }
+        return days;
+      },
+      hoursCallback: function(item) {
+        var hours = [];
+        if(item) {
+          Array.prototype.forEach.call(channel.querySelectorAll('hour'), function(element){
+            hours.push(element.textContent);
+          });
+        }
+        return hours;
+      },
+      sourceCallback: function(item) {
+        var source = {};
+        if(item) {
+          source.title = item.textContent;
+          source.url = item.url
+        }
+        return source;
+      },
+      enclosureCallback: function(item) {
+        var enclosure = {};
+        if(item) {
+          enclosure.url = item.url;
+          enclosure.length = item.length;
+          enclosure.type =  item.type;
+        }
+        return enclosure;
+      }
+    });
+  </script>
+</polymer-element>
