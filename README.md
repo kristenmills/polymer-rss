@@ -1,11 +1,17 @@
-# RSS Parser
+# Polymer RSS
 
 A Polymer rss feed parser.
+
+## Install
+
+```
+bower install --save polymer-rss
+```
 
 ## Usage
 
 ```html
-<rss-feed-parser url="https://example.com/feed.xml" on-feed-parsed="{{handleResponse}}"></rss-feed-parser>
+<rss-feed url="https://example.com/feed.xml" on-feed-parsed="{{handleResponse}}"></rss-feed>
 ```
 
 ### Attributes
