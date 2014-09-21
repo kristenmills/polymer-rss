@@ -1,14 +1,14 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-ajax/core-ajax.html">
 
-<polymer-element name="rss-feed-parser" constructor="RSSFeedParser" attributes="auto url headers params" hidden>
+<polymer-element name="rss-feed" constructor="RSSFeedParser" attributes="auto url headers params" hidden>
 
   <template>
     <core-ajax id="ajax" url="{{url}}" auto?="{{auto}}" params="{{params}}" headers="{{headers}}" on-core-response="{{handleResponse}}" handleAs="xml">
   </template>
 
   <script>
-    Polymer('rss-feed-parser', {
+    Polymer('rss-feed', {
       auto: false,
       handleResponse: function(event) {
         var response = event.detail.response;
