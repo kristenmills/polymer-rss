@@ -17,7 +17,6 @@
         }else {
           var channel = response.querySelector('rss channel');
           var feed = this.parseChannel(channel);
-          console.log(feed);
           this.fire('feed-parsed', { feed: feed, response: response, xhr: event.detail.xhr} );
         }
       },
